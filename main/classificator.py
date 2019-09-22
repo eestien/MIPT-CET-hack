@@ -1,4 +1,4 @@
-# Предсказыает режим работы (НЕФ/НАГ) в зависимости от значения "Закачка, м3"
+# Предсказыает режим работы (НЕФ/НАГ) в зависимости от значения "Закачка, м3", 'Попутный газ, м3', "Обводненность (вес), %"
 from sklearn import svm
 import pandas as pd
 import config as cf
@@ -54,10 +54,15 @@ def SVM():
     ##           MAXIMIZE         ##
     ################################
 
+    # Регрессионная модель, предсказывающая количесвто чистой нефти при параметрах 'Жидкость, т', 'Вода, т'
+    # TODO: Локализовать регрессионную модель по конкретным скважинам и "поиграться" с режимами этих насосов
+    params_for_maximize = ['Обводненность (вес), %', 'Время работы, ч', 'Забойное давление', 'Давление на приеме', 'Пластовое давление']
 
-    params_for_maximize = ['Жидкость, т', 'Вода, т']
-
-    X_train_max = data[params_for_maximize].fillna(0)
+    # for x in data[['Забойное давление']]:
+      #  print(x)
+    #data = data[data[['Забойное давление'] != 'datetime.datetime' in str(type(x))]]
+    #data = data[params_for_maximize]
+    X_train_max = data[params_for_maximize].fillna(0)#.applymap(lambda x: int(float(x)))
     #X_train_max["Способ эксплуатации"] = X_train_max["Способ эксплуатации"].astype("category")
     y_train_max = data['Нефть, т'].astype(int)
 
@@ -81,6 +86,13 @@ def SVM():
     pred = clf.predict(X_test)
     print(classification_report(y_test, pred))
     '''
+    from sklearn.linear_model import LogisticRegression
+    logisticRegr = LogisticRegression(solver='lbfgs', max_iter=200)
+    logisticRegr.fit(X_train_max_sp, y_train_max_sp)
+    print('score', logisticRegr.predict(X_test_max_sp))
+    print('score', logisticRegr.score(X_test_max_sp, y_test_max_sp))
+
+    '''
     from sklearn.ensemble import RandomForestRegressor
 
     regr = RandomForestRegressor(max_depth=2, random_state=42, n_estimators=100)
@@ -89,5 +101,5 @@ def SVM():
     pred = regr.predict(X_test_max_sp)
     ac = r2_score(y_test_max_sp, pred, multioutput='variance_weighted')
     print('r2_score: ', ac)
-
+    '''
 SVM()

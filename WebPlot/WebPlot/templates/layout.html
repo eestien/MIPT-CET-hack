@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet"
+              type="text/css"
+              href="static/css/style.css">
+    <meta charset="UTF-8">
+    <!--<meta http-equiv="refresh" content="5" >-->
+    <title>Title</title>
+</head>
+    <body>
+        <nav class='navig'>
+            <ul class="left">
+                <li><button><a href="/">Main</a></button></li>
+            </ul>
+            <ul class="right">
+                <li class="right"><button><a href="/plot">+ Show on the map</a></button></li>
+            </ul>
+        </nav>
+        <main>
+            <form action="#" class="input_form">
+                First name: <input type="text" name="FirstName" value="Mickey"><br>
+                Last name: <input type="text" name="LastName" value="Mouse"><br>
+                <input type="submit" value="Submit">
+            </form>
+        </main>
+        {% block content %}
+        {% endblock %}
+    </body>
+</html>
