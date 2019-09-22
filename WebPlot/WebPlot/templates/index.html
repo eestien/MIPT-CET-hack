@@ -1,10 +1,31 @@
 {% extends 'layout.html' %}
-
-
 {% block content %}
+
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            $('a#predict').bind('click', function() {
+                $.getJSON('/background_process', {
+                    raw_data_url: $('input[name="raw_data_url"]').val(),
+                }, function(data) {
+                    $('#result').text(data.result);
+                });
+            return false;
+            });
+        });
+    </script>
+</head>
     <div class="notelist">
         <div class="note">
-            <h1>HElllow</h1>
+            <h1>Привет, ну что, предскажем, как добыть побольше нефти???</h1>
         </div>
     </div>
+    <main>
+        <form action="#" class="input_form">
+            <p>Data (xlsx / csv): <input type="text" name="Raw Data" value="url"></p><br>
+            <a href="#" id="predict"><button type="submit" name="raw_data_url">Submit</button></a>
+        </form>
+        <p id="result"></p>
+    </main>
 {% endblock %}

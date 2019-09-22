@@ -1,23 +1,32 @@
 # Предсказыает режим работы (НЕФ/НАГ) в зависимости от значения "Закачка, м3", 'Попутный газ, м3', "Обводненность (вес), %"
 from sklearn import svm
 import pandas as pd
-import config as cf
-from sklearn.linear_model import LogisticRegression
+from Hack import config as cf
 from sklearn.preprocessing import StandardScaler, LabelBinarizer
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, r2_score
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 from joblib import dump, load
 import numpy as np
+from sklearn.ensemble import RandomForestRegressor
+import matplotlib.pyplot as plt
+import openpyxl
 
-def SVM():
-    params_for_mode_prediction = ["Закачка, м3", 'Попутный газ, м3', "Обводненность (вес), %"]
-    data = pd.read_excel(cf.base_dir+cf.train_raw)
-    test_data = pd.read_excel(cf.base_dir+cf.test_raw)
+def SVM(datafile: str):
+    data = 0
+    test_data = 0
+    if datafile.find('.xlsx') >= 0:
+        data = pd.read_excel(cf.base_dir + cf.train_raw)
+        test_data = pd.read_excel(cf.base_dir + cf.test_raw)
+
+    if datafile.find('.csv') >= 0:
+        data = pd.read_csv(cf.base_dir + cf.train_raw)
+        test_data = pd.read_csv(cf.base_dir + cf.test_raw)
+    params_for_mode_prediction = ["Закачка, м3", "Обводненность (вес), %"]
 
     data = data[data['Время работы, ч'] != 0].fillna(0)
     data = data[data['Характер работы'] != 'НЕФ/НАГ']
 
-    '''
+
     test_data = test_data[test_data['Время работы, ч'] != 0].fillna(0)
     test_data = test_data[test_data['Характер работы'] != 'НЕФ/НАГ']
 
@@ -46,8 +55,8 @@ def SVM():
     pred_real = model.predict(X_test_data)
     pred_real = lb.inverse_transform(pred_real)
     df = pd.DataFrame(pred_real, columns=['ouput'])
-    print(df)
-    '''
+    return pred_real
+
 
 
     ################################
@@ -56,50 +65,79 @@ def SVM():
 
     # Регрессионная модель, предсказывающая количесвто чистой нефти при параметрах 'Жидкость, т', 'Вода, т'
     # TODO: Локализовать регрессионную модель по конкретным скважинам и "поиграться" с режимами этих насосов
-    params_for_maximize = ['Обводненность (вес), %', 'Время работы, ч', 'Забойное давление', 'Давление на приеме', 'Пластовое давление']
 
-    # for x in data[['Забойное давление']]:
-      #  print(x)
-    #data = data[data[['Забойное давление'] != 'datetime.datetime' in str(type(x))]]
-    #data = data[params_for_maximize]
-    X_train_max = data[params_for_maximize].fillna(0)#.applymap(lambda x: int(float(x)))
-    #X_train_max["Способ эксплуатации"] = X_train_max["Способ эксплуатации"].astype("category")
-    y_train_max = data['Нефть, т'].astype(int)
+def clean(x):
+    x = str(x)
+    if x.find('0:00:00') >= 0:
+        return np.nan
+    else:
+        return float(x)
+    
+def Regression(datafile_tr:str, datafile_ts:str, num_left = cf.num_left):
+    params_for_maximize = ['Обводненность (), %', 'Время работы, ч', 'Забойное давление', 'Давление на приеме', 'Пластовое давление']
+    data = 0
+    test_data = 0
+    # Check data format
+    dt = str(datafile_tr)
+    ts = str(datafile_ts)
+    if dt.find('.xlsx') >= 0 or ts.find('.xlsx') >= 0:
+        data = pd.read_excel(datafile_tr)
+        test_data = pd.read_excel(datafile_ts)
 
-    X_train_max_sp, X_test_max_sp, y_train_max_sp, y_test_max_sp = train_test_split(X_train_max, y_train_max, test_size=0.3)
-    '''
-    # Set Classifier
-    clf = LogisticRegression(C=0.01, penalty='l1')
+    if dt.find('.csv') >= 0 or ts.find('.csv') >= 0:
+        data = pd.read_csv(datafile_tr)
+        test_data = pd.read_csv(datafile_ts)
 
-    # Grid Search
-    grid = {"C": np.logspace(-3, 3, 7), "penalty": ["l1", "l2"]}
-    logreg_cv = RandomizedSearchCV(clf, grid, cv=2, n_iter=3)
-    logreg_cv.fit(X_train_max_sp, y_train_max_sp)
 
-    print("tuned hpyerparameters :(best parameters) ", logreg_cv.best_params_)
-    print("accuracy :", logreg_cv.best_score_)
-    '''
-    '''
-    # Fitting Logistic Regression to the Training set
-    clf.fit(X_train, y_train)
+    params_for_maximize = ['Обводненность (вес), %', 'Время работы, ч', 'Забойное давление', 'Давление на приеме',
+                          'Пластовое давление', 'Нефть, т']
+    X_max = data[params_for_maximize]
+    X_max = X_max.fillna(X_max.median())
 
-    pred = clf.predict(X_test)
-    print(classification_report(y_test, pred))
-    '''
-    from sklearn.linear_model import LogisticRegression
-    logisticRegr = LogisticRegression(solver='lbfgs', max_iter=200)
-    logisticRegr.fit(X_train_max_sp, y_train_max_sp)
-    print('score', logisticRegr.predict(X_test_max_sp))
-    print('score', logisticRegr.score(X_test_max_sp, y_test_max_sp))
+    X_max['Забойное давление'] = X_max['Забойное давление'].apply(clean)
+    X_max['Давление на приеме'] = X_max['Давление на приеме'].apply(clean)
 
-    '''
-    from sklearn.ensemble import RandomForestRegressor
+    X_max = X_max.fillna(X_max.median())
+    y_max = X_max.pop('Нефть, т')
 
-    regr = RandomForestRegressor(max_depth=2, random_state=42, n_estimators=100)
+    X_train_max_sp, X_test_max_sp, y_train_max_sp, y_test_max_sp = train_test_split(X_max, y_max,
+                                                                                    test_size=0.3)
+
+    regr = RandomForestRegressor(n_estimators=100)
+
     regr.fit(X_train_max_sp, y_train_max_sp)
-    print(regr.feature_importances_)
-    pred = regr.predict(X_test_max_sp)
-    ac = r2_score(y_test_max_sp, pred, multioutput='variance_weighted')
-    print('r2_score: ', ac)
-    '''
-SVM()
+
+    sc = regr.score(X_test_max_sp, y_test_max_sp)
+    print("r2_train: ", sc)
+
+
+
+
+    params_for_maximize1 = ['Обводненность (вес), %', 'Время работы, ч', 'Забойное давление', 'Давление на приеме',
+                          'Пластовое давление', 'Закачка, м3']
+    X_test = test_data[params_for_maximize1]
+    X_test = X_test.fillna(X_test.median())
+
+    X_test['Забойное давление'] = X_test['Забойное давление'].apply(clean)
+
+    X_test = X_test.fillna(X_test.median())
+
+    doptest = X_test.copy()
+    X_test = X_test.drop(['Закачка, м3'], axis=1)
+
+    doptest['Нефть, т'] = regr.predict(X_test)
+
+    doptest = doptest.fillna(doptest.median())
+
+    doptest = doptest.sort_values('Нефть, т', ascending=False).loc[:num_left]
+
+    final_xlsx =''
+    # final_xlsx = doptest.to_excel('dd.xlsx')
+    return doptest
+
+d = Regression(cf.base_dir+cf.train_raw, cf.base_dir+cf.test_raw)
+
+print(d.head())
+
+#modes = SVM(d)
+#print(modes)

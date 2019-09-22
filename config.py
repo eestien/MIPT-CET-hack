@@ -2,6 +2,8 @@ train_raw = "/data/train.xlsx"
 test_raw = "/data/test.xlsx"
 BASE_DIR = 'Hack'
 
+
+num_left = 50
 import os
 def get_base_dir_by_name(name):
     path = os.getcwd()
