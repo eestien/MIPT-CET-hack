@@ -11,24 +11,29 @@ from sklearn.ensemble import RandomForestRegressor
 import matplotlib.pyplot as plt
 import openpyxl
 
-def SVM(datafile: str):
+def SVM(datafile_tr = 0):#, datafile_ts:str, num_left = cf.num_left):
+    params_for_mode_prediction = ["Закачка, м3", "Обводненность (вес), %"]
     data = 0
     test_data = 0
-    if datafile.find('.xlsx') >= 0:
-        data = pd.read_excel(cf.base_dir + cf.train_raw)
-        test_data = pd.read_excel(cf.base_dir + cf.test_raw)
+    '''
+    # Check data format
+    dt = str(datafile_tr)
+    ts = str(datafile_ts)
+    if dt.find('.xlsx') >= 0 or ts.find('.xlsx') >= 0:
+        data = pd.read_excel(datafile_tr)
+        test_data = pd.read_excel(datafile_ts)
 
-    if datafile.find('.csv') >= 0:
-        data = pd.read_csv(cf.base_dir + cf.train_raw)
-        test_data = pd.read_csv(cf.base_dir + cf.test_raw)
-    params_for_mode_prediction = ["Закачка, м3", "Обводненность (вес), %"]
-
+    if dt.find('.csv') >= 0 or ts.find('.csv') >= 0:
+        data = pd.read_csv(datafile_tr)
+        test_data = pd.read_csv(datafile_ts)
+    '''
+    data = pd.read_excel(datafile_tr)
     data = data[data['Время работы, ч'] != 0].fillna(0)
     data = data[data['Характер работы'] != 'НЕФ/НАГ']
 
 
-    test_data = test_data[test_data['Время работы, ч'] != 0].fillna(0)
-    test_data = test_data[test_data['Характер работы'] != 'НЕФ/НАГ']
+    test_data = data[data['Время работы, ч'] != 0].fillna(0)
+    test_data = data[data['Характер работы'] != 'НЕФ/НАГ']
 
     lb = LabelBinarizer()
     X_train = data[params_for_mode_prediction]
@@ -49,13 +54,16 @@ def SVM(datafile: str):
     print("Accuracy obtained over the whole training set is %0.6f %% ." % (accu_percent))
 
     # Save model
-    dump(model_svc, cf.base_dir + '/models/SVM.joblib')
-
+    # dump(model_svc, cf.base_dir + '/models/SVM.joblib')
+    '''
+    # Load model
     model = load(cf.base_dir + '/models/SVM.joblib')
     pred_real = model.predict(X_test_data)
+    
     pred_real = lb.inverse_transform(pred_real)
     df = pd.DataFrame(pred_real, columns=['ouput'])
     return pred_real
+    '''
 
 
 
@@ -137,7 +145,7 @@ def Regression(datafile_tr:str, datafile_ts:str, num_left = cf.num_left):
 
 d = Regression(cf.base_dir+cf.train_raw, cf.base_dir+cf.test_raw)
 
-print(d.head())
 
-#modes = SVM(d)
-#print(modes)
+
+modes = SVM(d)
+print(modes)

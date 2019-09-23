@@ -3,9 +3,44 @@
     padding: 0;
 }
 
+.note_sec{
+    width: 50%;
+    margin-left: 0px;
+}
+body{
+    background-color: aliceblue;
+}
 img {
-    width: 80%;
-    height: 70%;
+    width: 60%;
+    height: 50%;
+}
+
+sec{
+    float: right;
+}
+.input_form p{
+    height: 15px;
+    width: auto;
+    margin: 10px 0;
+    font-size: 30px;
+}
+
+#predict button{
+    height: 40px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    width: 120px;
+    text-align: center;
+    vertical-align: middle;
+    margin-top: 50px;
+    font-size: 30px;
+}
+.in {
+    height: 30px;
+    width: auto;
+    margin: 20px 0;
+    font-size: 30px;
 }
 *{
     margin: 0;
@@ -13,12 +48,16 @@ img {
 }
 .left{
     float: left;
+    padding-top: 13px;
 }
 .right{
     float: right;
+    padding-top: 7px;
 }
 
-
+main {
+    margin: 10px;
+}
 
 .navig{
     width: 100%;
@@ -43,4 +82,14 @@ img {
 .input_form{
     margin: auto;
     width: 250px;
+}
+
+.HI {
+    text-align: center;
+    margin-top: 150px;
+    margin-bottom: 50px;
+    font-weight: 10;
+}
+.input_form_sec{
+    float: right;
 }

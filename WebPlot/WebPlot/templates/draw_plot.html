@@ -4,7 +4,12 @@
 {% block content %}
     <div class="notelist">
         <div class="note">
-            <img src="static/images/Vyshki.png" alt="my plot">
+            <div class="note_sec"><img src="static/images/Vyshki.png" alt="my plot"></div>
+            <form action="#" class="input_form_sec">
+            <p>Location X <input  class="sec" type="text" name="Raw Data" value="url" placeholder="url"></p><br>
+            <p>Location Y<input  class="sec" type="text" name="Raw Data" value="url" placeholder="url"></p><br>
+                <p><a href="#" id="predict"><button type="submit" name="raw_data_url">Submit</button></a></p>
+        </form>
         </div>
     </div>
 {% endblock %}
